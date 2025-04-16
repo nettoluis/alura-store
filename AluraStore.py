@@ -1,5 +1,8 @@
 import pandas as pd
 import matplotlib.pyplot as plt
+import streamlit as st
+
+st.title('Análise Alura Store')
 
 urls = [
     "https://raw.githubusercontent.com/alura-es-cursos/challenge1-data-science/refs/heads/main/base-de-dados-challenge-1/loja_1.csv",
