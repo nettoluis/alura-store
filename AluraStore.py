@@ -10,89 +10,95 @@ urls = [
     "https://raw.githubusercontent.com/alura-es-cursos/challenge1-data-science/refs/heads/main/base-de-dados-challenge-1/loja_3.csv",
     "https://raw.githubusercontent.com/alura-es-cursos/challenge1-data-science/refs/heads/main/base-de-dados-challenge-1/loja_4.csv"
 ]
-"""Criando a identificação das lojas"""
+
 lojasDados = [pd.read_csv(url) for url in urls]
 lojasNomes = [f'Loja {i + 1}' for i in range(len(lojasDados))]
-"""Faturamento de cada loja"""
-faturamentosTotais = [dadosFaturamento['Preço'].sum() for dadosFaturamento in lojasDados]
-for i in range(len(lojasDados)):
-    print(f'{lojasNomes[i]}: R${faturamentosTotais[i]}')
-#Gráfico de barras referente ao faturamento de cada loja
-plt.bar(lojasNomes, faturamentosTotais)
-plt.title('Faturamento por Loja')
-plt.xlabel('Lojas')
-plt.ylabel('Faturamento Total Em Milhões de Reais')
-plt.ylim(1350000,1550000)
-plt.show()
-#Gráfico de pizza referente ao faturamento de cada loja
-plt.pie(faturamentosTotais, labels=lojasNomes, startangle=180)
-plt.show()
-"""Quantidade por categoria"""
-for i, lojaDados in enumerate(lojasDados, 1):
-    plt.figure(figsize=(8, 5))
-    contagemDasCategorias = lojaDados['Categoria do Produto'].value_counts()
-    print(f'\n{"-"*40}')
-    print(f'Loja {i} - Quantidade por Categoria:')
-    for categoria, quantidade in contagemDasCategorias.items():
-        print(f'{categoria}: {quantidade} unidades')
-    print('-'*40)
-#Gerando o gráfico de barras referente a quantidade por categoria de cada loja
-    contagemDasCategorias.plot.bar(color='skyblue')
-    plt.title(f'Vendas por Categoria - Loja {i}')
-    plt.xlabel('Categorias')
-    plt.ylabel('Quantidade Vendida')
+
+# Faturamento de cada loja
+st.header("Faturamento Total por Loja")
+faturamentosTotais = [dados['Preço'].sum() for dados in lojasDados]
+for nome, faturamento in zip(lojasNomes, faturamentosTotais):
+    st.write(f'{nome}: R${faturamento:,.2f}')
+
+# Gráfico de Barras - Faturamento
+fig, ax = plt.subplots()
+ax.bar(lojasNomes, faturamentosTotais)
+ax.set_title('Faturamento por Loja')
+ax.set_xlabel('Lojas')
+ax.set_ylabel('Faturamento Total (R$)')
+ax.set_ylim(1350000, 1550000)
+st.pyplot(fig)
+
+# Gráfico de Pizza - Faturamento
+fig, ax = plt.subplots()
+ax.pie(faturamentosTotais, labels=lojasNomes, startangle=180, autopct='%.1f%%')
+ax.set_title('Participação no Faturamento Total')
+st.pyplot(fig)
+
+# Quantidade por Categoria
+st.header("Quantidade Vendida por Categoria")
+for i, dados_loja in enumerate(lojasDados, 1):
+    st.subheader(f'Loja {i}')
+    contagem = dados_loja['Categoria do Produto'].value_counts()
+
+    # Exibe tabela de quantidades
+    for categoria, qtd in contagem.items():
+        st.write(f'{categoria}: {qtd} unidades')
+
+    # Gráfico de Barras
+    fig, ax = plt.subplots(figsize=(8, 5))
+    contagem.plot.bar(ax=ax, color='skyblue')
+    ax.set_title(f'Vendas por Categoria - Loja {i}')
+    ax.set_xlabel('Categorias')
+    ax.set_ylabel('Quantidade Vendida')
     plt.xticks(rotation=45)
-    plt.tight_layout()
-    plt.show()
-"""Avaliações médias"""
-avaliacoesMedias = []
-for i, loja in enumerate(lojasDados):
-    media = loja["Avaliação da compra"].mean()
-    avaliacoesMedias.append(media)
-    print(f"{lojasNomes[i]}: {media:.2f}")
-#Gerando o gráfico de barras das avaliações médias de cada loja
-plt.bar(lojasNomes, avaliacoesMedias)
-plt.title('Média de Avaliação por Loja')
-plt.ylabel('Média de Avaliação')
-plt.ylim(3.9, 4.10)
-plt.show()
-"""Produtos Mais e Menos Vendidos de cada loja"""
-for dados, nome in zip(lojasDados, lojasNomes):
-    contagemProdutos = dados['Produto'].value_counts()
-    produtoMaisVendido = contagemProdutos.idxmax()
-    quantidadeMaisVendido = contagemProdutos.max()
-    produtoMenosVendido = contagemProdutos.idxmin()
-    quantidadeMenosVendido = contagemProdutos.min()
-    print(f"\n{nome}:")
-    print(f"Produto mais vendido: {produtoMaisVendido} ({quantidadeMaisVendido} vendas)")
-    print(f"Produto menos vendido: {produtoMenosVendido} ({quantidadeMenosVendido} vendas)")
-#Gerando o gráfico de linhas dos produtos mais e menos vendidos por cada loja
-for i, dados in enumerate(lojasDados, start=1):
-    plt.figure(figsize=(10, 5))
-    contagemDosProdutos = dados['Produto'].value_counts()
-    maisVendidos = contagemDosProdutos.head(3)
-    menosVendidos = contagemDosProdutos.tail(3)
-    pareandoTops3 = pd.concat([maisVendidos, menosVendidos])
-    pareandoTops3.plot(kind='line', marker='o', color='green', linewidth=2, markersize=8)
-    plt.title(f'Loja {i} - Desempenho de Produtos', fontsize=14)
-    plt.xlabel('Produtos', fontsize=12)
-    plt.ylabel('Quantidade Vendida', fontsize=12)
+    st.pyplot(fig)
+
+# Avaliações Médias
+st.header("Avaliações Médias por Loja")
+avaliacoes_medias = [dados['Avaliação da compra'].mean() for dados in lojasDados]
+
+fig, ax = plt.subplots()
+ax.bar(lojasNomes, avaliacoes_medias)
+ax.set_title('Média de Avaliação por Loja')
+ax.set_ylabel('Média de Avaliação')
+ax.set_ylim(3.9, 4.1)
+st.pyplot(fig)
+
+# Produtos Mais/Menos Vendidos
+st.header("Desempenho de Produtos")
+for i, dados in enumerate(lojasDados, 1):
+    st.subheader(f'Loja {i}')
+    contagem = dados['Produto'].value_counts()
+
+    # Top 3 e Bottom 3
+    top3 = contagem.head(3)
+    bottom3 = contagem.tail(3)
+
+    st.write("**Mais vendidos:**")
+    for produto, qtd in top3.items():
+        st.write(f"- {produto}: {qtd} unidades")
+
+    st.write("**Menos vendidos:**")
+    for produto, qtd in bottom3.items():
+        st.write(f"- {produto}: {qtd} unidades")
+
+    # Gráfico de Linha
+    fig, ax = plt.subplots(figsize=(10, 5))
+    pd.concat([top3, bottom3]).plot(kind='line', marker='o', ax=ax, color='green')
+    ax.set_title(f'Desempenho de Produtos - Loja {i}')
+    ax.set_xlabel('Produtos')
+    ax.set_ylabel('Quantidade Vendida')
     plt.xticks(rotation=45)
-    plt.grid(alpha=0.3)
-    plt.tight_layout()
-    plt.show()
-"""Frete médio por loja"""
-mediasFretes = []
-for dados, nome in zip(lojasDados, lojasNomes):
-    mediaFrete = dados['Frete'].mean()
-    mediasFretes.append(mediaFrete)
-    print(f"{nome}:")
-    print(f"Média de frete → R${mediaFrete:.2f}\n")
-#Gerando o gráfico de barras dos valores de frete médio de cada uma das lojas
-plt.bar(lojasNomes,mediasFretes)
-plt.title('Médias de Frete por Loja')
-plt.ylabel('Valor médio do frete em R$')
-plt.ylim(30,35)
-plt.show()
-#Gerando mapa de dispersão com as informações de latitude e longitude
-#Não consegui, fica para depois ;-;
+    st.pyplot(fig)
+
+# Frete Médio
+st.header("Média de Frete por Loja")
+medias_frete = [dados['Frete'].mean() for dados in lojasDados]
+
+fig, ax = plt.subplots()
+ax.bar(lojasNomes, medias_frete)
+ax.set_title('Média de Frete por Loja')
+ax.set_ylabel('Valor Médio (R$)')
+ax.set_ylim(30, 35)
+st.pyplot(fig)
